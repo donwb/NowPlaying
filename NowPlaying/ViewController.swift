@@ -17,6 +17,8 @@ class ViewController: UIViewController {
     @IBOutlet var artistNameAndRank: UILabel!
     @IBOutlet var artistBuzz: UILabel!
     
+    private let placeholderArtURL = "https://www.macobserver.com/wp-content/uploads/2020/03/workheader-Apple-Music.jpg"
+    private let videowallURL = "https://videowall-kb9x9.ondigitalocean.app"
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -65,24 +67,61 @@ class ViewController: UIViewController {
             self.artistName.text = artist
             
             let totalPlayCount = info.nowPlaying?.totalPlayCount ?? "0"
-            self.totalScrobbles.text = totalPlayCount
+            let formattedPlayCount = self.makeWithCommas(stringNumber: totalPlayCount)
+            self.totalScrobbles.text = "\(formattedPlayCount) scrobbles"
             
             let rank = info.nowPlaying?.artistRanking ?? 0
-            let totalRank = info.nowPlaying?.maxRanks ?? 0
-            let nameAndRank = "\(artist) (#\(rank) | \(totalRank) plays)"
+            let totalPlays = info.nowPlaying?.myArtistPlayCount ?? 0
+            let nameAndRank = "\(artist) (#\(rank) | \(totalPlays) plays)"
             self.artistNameAndRank.text = nameAndRank
             
             let fire = self.computeFire(trackPlayCount: info.nowPlaying?.myTrackPlayCount ?? 0)
             self.artistBuzz.text = fire
             
-            // set image
-            // self.imageView.image = UIImage(data: data)
-            let imageURL = info.nowPlaying?.art ?? "https://www.macobserver.com/wp-content/uploads/2020/03/workheader-Apple-Music.jpg"
-            guard let url = URL(string: imageURL) else { return }
             
-            self.albumImage.load(url: url)
+            self.setImage(imageName: info.nowPlaying?.art)
             
         }
+    }
+    
+    func setImage(imageName: String?) {
+        // this code is a fucking abomination.  String parsing in Swift is a horror show
+
+        var imageStringURL = imageName ?? placeholderArtURL
+        // bascially the filename has to be percent encoded, but not the rest of the url string
+        // so this is ripping off the file name of the custom artwork, encoding it, and reappending the URL
+        if imageStringURL.contains("static/art"){
+            guard let fileSuffixIndex = imageStringURL.lastIndex(of: "/") else {
+                print("suffex shit")
+                return
+            }
+            let filename = imageStringURL.suffix(from: fileSuffixIndex)
+            let theFilename = filename.dropFirst()
+            let encodedFileName = theFilename.addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) ?? placeholderArtURL
+            
+            print(encodedFileName)
+            
+            let finalImageStringURL = videowallURL + "/static/art/" + encodedFileName
+            imageStringURL = finalImageStringURL
+        }
+        
+        print("Using image: \(imageStringURL)")
+                
+        guard let url = URL(string: imageStringURL) else {
+            print("there was an issue with the image url")
+            return
+        }
+        
+        self.albumImage.load(url: url)
+    }
+    
+
+    
+    func makeWithCommas(stringNumber: String) -> String {
+        guard let intNumber = Int(stringNumber) else { return "0" }
+        
+        return intNumber.withCommas
+        
     }
     
     func computeFire(trackPlayCount: Int) -> String {
@@ -106,5 +145,18 @@ extension UIImageView {
                 }
             }
         }
+    }
+}
+
+extension Int {
+
+    private static var commaFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter
+    }()
+
+    internal var withCommas: String {
+        return Int.commaFormatter.string(from: NSNumber(value: self)) ?? ""
     }
 }
