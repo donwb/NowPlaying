@@ -1,10 +1,12 @@
 {
   "images" : [
     {
+      "filename" : "icons8-musical-notes-96.png",
       "idiom" : "tv",
       "scale" : "1x"
     },
     {
+      "filename" : "icons8-musical-notes-97.png",
       "idiom" : "tv",
       "scale" : "2x"
     }
