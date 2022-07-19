@@ -19,6 +19,9 @@ class ViewController: UIViewController {
     
     private let placeholderArtURL = "https://www.macobserver.com/wp-content/uploads/2020/03/workheader-Apple-Music.jpg"
     private let videowallURL = "https://videowall-kb9x9.ondigitalocean.app"
+    private let videoWallApi = "https://videowall-kb9x9.ondigitalocean.app/api"
+    
+    private var refreshTimer: Timer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +29,14 @@ class ViewController: UIViewController {
         
         
         // just load it once for now, on view load
+        refreshTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
+        
+        getCurrentlyPlaying()
+        
+    }
+    
+    @objc func fireTimer() {
+        print("Firing timer...")
         
         getCurrentlyPlaying()
         
@@ -33,11 +44,8 @@ class ViewController: UIViewController {
     
     func getCurrentlyPlaying() {
         let session = URLSession.shared
-    
         
-        let endpoint = "https://videowall-kb9x9.ondigitalocean.app/api"
-        guard let url = URL(string: endpoint) else {return}
-        
+        guard let url = URL(string: videoWallApi) else {return}
         
         session.dataTask(with: url) {data, response, error in
             
@@ -72,7 +80,9 @@ class ViewController: UIViewController {
             
             let rank = info.nowPlaying?.artistRanking ?? 0
             let totalPlays = info.nowPlaying?.myArtistPlayCount ?? 0
-            let nameAndRank = "\(artist) (#\(rank) | \(totalPlays) plays)"
+            let totalPlaysString = self.makeWithCommas(stringNumber: String(totalPlays))
+            
+            let nameAndRank = "\(artist) (#\(rank) | \(totalPlaysString) plays)"
             self.artistNameAndRank.text = nameAndRank
             
             let fire = self.computeFire(trackPlayCount: info.nowPlaying?.myTrackPlayCount ?? 0)
