@@ -17,6 +17,9 @@ class ViewController: UIViewController {
     @IBOutlet var artistNameAndRank: UILabel!
     @IBOutlet var artistBuzz: UILabel!
     
+    @IBOutlet var albumBuzzText: UILabel!
+    @IBOutlet var albumImageShadow: UIView!
+    
     private let placeholderArtURL = "https://www.macobserver.com/wp-content/uploads/2020/03/workheader-Apple-Music.jpg"
     private let videowallURL = "https://videowall-kb9x9.ondigitalocean.app"
     private let videoWallApi = "https://videowall-kb9x9.ondigitalocean.app/api"
@@ -26,10 +29,13 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        clearUI()
+        
+        self.albumImage.applyshadowWithCorner(containerView: albumImageShadow, cornerRadious: 0.25)
+        
         getCurrentlyPlaying()
         
         refreshTimer = Timer.scheduledTimer(timeInterval: 5.0, target: self, selector: #selector(fireTimer), userInfo: nil, repeats: true)
-        
     }
     
     @objc func fireTimer() {
@@ -37,6 +43,18 @@ class ViewController: UIViewController {
         
         getCurrentlyPlaying()
         
+    }
+    
+    func clearUI() {
+        self.albumTitle.text = ""
+        self.trackTitle.text = ""
+        self.artistName.text = ""
+        self.totalScrobbles.text = ""
+        self.artistNameAndRank.text = "Loading....."
+        self.artistBuzz.text = ""
+        self.albumBuzzText.text = ""
+        
+        //self.setImage(imageName: info.nowPlaying?.art)
     }
     
     func getCurrentlyPlaying() {
@@ -65,6 +83,8 @@ class ViewController: UIViewController {
 
     func updateUI(info: NowPlayingResult) {
         DispatchQueue.main.async {
+            self.albumBuzzText.text = "Album Buzz:"
+            
             self.albumTitle.text = info.nowPlaying?.album ?? ""
             self.trackTitle.text = info.nowPlaying?.track ?? ""
             
@@ -133,7 +153,7 @@ class ViewController: UIViewController {
     
     func computeFire(trackPlayCount: Int) -> String {
         let count = ceil(Double(trackPlayCount) / 50.0)
-        let fires = Int(count) // will never overload an int
+        let fires = Int(count) + 1 // will never overload an int & everyone deserves at least one 🔥
         let fire = String(repeating: "🔥", count: fires)
         
         return fire
@@ -152,6 +172,18 @@ extension UIImageView {
                 }
             }
         }
+    }
+    
+    func applyshadowWithCorner(containerView : UIView, cornerRadious : CGFloat){
+        containerView.clipsToBounds = false
+        containerView.layer.shadowColor = UIColor.white.cgColor
+        containerView.layer.shadowOpacity = 1
+        containerView.layer.shadowOffset = CGSize.zero
+        containerView.layer.shadowRadius = 10
+        containerView.layer.cornerRadius = cornerRadious
+        containerView.layer.shadowPath = UIBezierPath(roundedRect: containerView.bounds, cornerRadius: cornerRadious).cgPath
+        self.clipsToBounds = true
+        self.layer.cornerRadius = cornerRadious
     }
 }
 
