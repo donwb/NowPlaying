@@ -5,13 +5,16 @@
   },
   "layers" : [
     {
-      "filename" : "Front.imagestacklayer"
+      "filename" : "icons8-musical-notes-96.imagestacklayer"
     },
     {
-      "filename" : "Middle.imagestacklayer"
-    },
-    {
-      "filename" : "Back.imagestacklayer"
+      "filename" : "iconLargeBack.imagestacklayer"
     }
-  ]
+  ],
+  "properties" : {
+    "canvasSize" : {
+      "height" : 768,
+      "width" : 1280
+    }
+  }
 }
