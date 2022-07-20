@@ -54,6 +54,7 @@ class ViewController: UIViewController {
         self.artistBuzz.text = ""
         self.albumBuzzText.text = ""
         
+        // Right now the underlying view is a white box, not great, but come back to this later
         //self.setImage(imageName: info.nowPlaying?.art)
     }
     
@@ -63,18 +64,12 @@ class ViewController: UIViewController {
         guard let url = URL(string: videoWallApi) else {return}
         
         session.dataTask(with: url) {data, response, error in
-            
-            print("fetching now playing api")
-            
             if let error = error {
-                print("oh shit!")
                 print(error)
+                print("oh shit!, there was an error calling the API")
             } else
             if let data = data {
                 let npl: NowPlayingResult = try! JSONDecoder().decode(NowPlayingResult.self, from: data)
-                
-                print("it seemed to work!")
-                
                 self.updateUI(info: npl)
             }
             
@@ -83,6 +78,13 @@ class ViewController: UIViewController {
 
     func updateUI(info: NowPlayingResult) {
         DispatchQueue.main.async {
+            
+            // if the track hasn't changed, just bail and try again later
+            if info.nowPlaying?.track == self.trackTitle.text {
+                print("no change, bailing...")
+                return
+            }
+            
             self.albumBuzzText.text = "Album Buzz:"
             
             self.albumTitle.text = info.nowPlaying?.album ?? ""
@@ -152,6 +154,7 @@ class ViewController: UIViewController {
     }
     
     func computeFire(trackPlayCount: Int) -> String {
+        // Naming a function "compute fire" was just too tempting
         let count = ceil(Double(trackPlayCount) / 50.0)
         let fires = Int(count) + 1 // will never overload an int & everyone deserves at least one 🔥
         let fire = String(repeating: "🔥", count: fires)
@@ -174,6 +177,7 @@ extension UIImageView {
         }
     }
     
+    // Thanks Stack Overflow
     func applyshadowWithCorner(containerView : UIView, cornerRadious : CGFloat){
         containerView.clipsToBounds = false
         containerView.layer.shadowColor = UIColor.white.cgColor
